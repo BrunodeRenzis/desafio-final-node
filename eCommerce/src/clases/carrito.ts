@@ -5,3 +5,10 @@ export interface Carrito{
     timestamp:number,
     productos:Producto[]
 }
+
+
+// export class Carrito{
+//     constructor(public productos:Producto[]){
+//         this.productos = productos;
+//     }
+// }

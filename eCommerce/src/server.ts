@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Socket } from 'socket.io';
 import { Carrito } from './clases/carrito';
 import { Producto } from './clases/producto';
 const express = require('express');
@@ -13,10 +14,11 @@ const {Router} = express;
 const routerProductos = Router();
 const routerCarrito = Router();
 let administrador:Boolean = false;
+const io = new IOServer(httpServer);
 
 app.use('/api/productos',routerProductos);
 app.use('/api/carritos',routerCarrito);
-app.use(express.static('public'));
+app.use(express.static('./public'));
 
 const contenedorProductos = new Contenedor('productos.txt');
 const contenedorCarritos = new Contenedor('carritos.txt');
@@ -34,7 +36,7 @@ let carritos:Carrito[] = [];
 let apiProductos = new ApiClass(productos);
 let apiCarritos = new ApiClass(carritos);
 
-routerProductos.get('', (req:Request,res:Response)=>{
+routerProductos.get('/', (req:Request,res:Response)=>{
     res.send({productos: productos});
 })
 
@@ -64,8 +66,16 @@ routerCarrito.get('/:id', (req:Request,res:Response)=>{
     apiCarritos.get(req,res);
 })
 
+routerCarrito.get('/:id/productos',(req:Request,res:Response)=>{
+    apiCarritos.getProductsOfCarrito(req,res);
+})
+
+routerCarrito.post('/:id/productos',(req:Request,res:Response)=>{
+    apiCarritos.postProductsInCarrito(req,res);
+})
+
 routerCarrito.post('', (req:Request,res:Response)=>{
-    apiCarritos.add(req,res);
+    apiCarritos.addCarrito(req,res,productos);
 })
 
 routerCarrito.put('/:id',(req:Request,res:Response)=>{
@@ -76,12 +86,46 @@ routerCarrito.delete('/:id',(req:Request,res:Response)=>{
     apiCarritos.delete(req,res);
 })
 
+routerCarrito.delete('/:id/productos/:id_prod',(req:Request,res:Response)=>{
+    apiCarritos.deleteProductInCarrito(req,res);
+})
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+io.on('connection',(socket:Socket)=>{
+    console.log("Nuevo cliente conectado");
+    socket.emit('carritos',carritos);
+    socket.emit('productos',productos);
+    socket.on('nuevo-producto',mensaje=>{
+        io.sockets.emit('productos',productos);
+        if(productos.length==0){
+            productos.push(mensaje);
+            contenedorProductos.save(productos);
+        }
+        else{
+            productos.push(mensaje);
+            contenedorProductos.save(mensaje);  
+        }
+    })
+    socket.on('nuevo-producto',producto=>{
+        io.sockets.emit('productos',productos);
+        if(productos.length==0){
+            productos.push(producto);
+            contenedorProductos.save(productos);
+        }
+        else{
+            productos.push(producto);
+            contenedorProductos.save(producto);
+        }
+    })
+})
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 const PORT = process.env.port || 8080;
-const server = app.listen(PORT,()=>{console.log('server runing')});
-server.on('error',(error:Error)=>console.log(`Error ${error}`));
+//const server = app.listen(PORT,()=>{console.log('server runing')});
+//server.on('error',(error:Error)=>console.log(`Error ${error}`));
+httpServer.listen(PORT,()=>console.log("SERVER ON")).on('error',(error:Error)=>console.log(`Error en el servidor ${error}`));
 
 ///////////////////////////////////TODO LIST///////////////////////////////////
 /*
     1)TRABAJAR CON WEBSOCKET PARA MOSTRAR LOS PRODUCTOS QUE VAS AGREGANDO A LA LISTA
-    2)FIJARSE SI SE PUEDE DECIR EL TYPEOF SOBRE EL ELEMENTO QUE SE ESTÁ AGREGANDO CON LA FUNCIÓN ADD O SI HAY QUE CAMBIAR DE INTERFACES A CLASES
 */
