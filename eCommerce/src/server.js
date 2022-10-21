@@ -35,6 +35,7 @@ routerProductos.get('/:id', function (req, res) {
     apiProductos.get(req, res);
 });
 routerProductos.post('', function (req, res) {
+    contenedorProductos.save(productos);
     apiProductos.add(req, res);
 });
 routerProductos.put('/:id', function (req, res) {
@@ -54,6 +55,7 @@ routerCarrito.post('/:id/productos', function (req, res) {
     apiCarritos.postProductsInCarrito(req, res);
 });
 routerCarrito.post('', function (req, res) {
+    contenedorProductos.save(carritos);
     apiCarritos.addCarrito(req, res, productos);
 });
 routerCarrito.put('/:id', function (req, res) {
@@ -70,26 +72,31 @@ io.on('connection', function (socket) {
     console.log("Nuevo cliente conectado");
     socket.emit('carritos', carritos);
     socket.emit('productos', productos);
-    socket.on('nuevo-producto', function (mensaje) {
-        io.sockets.emit('productos', productos);
-        if (productos.length == 0) {
-            productos.push(mensaje);
-            contenedorProductos.save(productos);
-        }
-        else {
-            productos.push(mensaje);
-            contenedorProductos.save(mensaje);
-        }
-    });
     socket.on('nuevo-producto', function (producto) {
         io.sockets.emit('productos', productos);
         if (productos.length == 0) {
             productos.push(producto);
+            console.log("Guardando archivo de productos en el if");
             contenedorProductos.save(productos);
         }
         else {
             productos.push(producto);
+            console.log("Guardando archivo de productos en el else");
             contenedorProductos.save(producto);
+        }
+    });
+    socket.on('nuevo-carrito', function (carrito) {
+        console.log("Socket de carrito on");
+        io.sockets.emit('carritos', carritos);
+        if (carritos.length == 0) {
+            carritos.push(carrito);
+            console.log("Guardando archivo de carrito en el if");
+            contenedorCarritos.save(carritos);
+        }
+        else {
+            carritos.push(carrito);
+            console.log("Guardando archivo de carrito en el else");
+            contenedorCarritos.save(carrito);
         }
     });
 });

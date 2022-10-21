@@ -49,6 +49,7 @@ routerProductos.get('/:id', (req:Request,res:Response)=>{
 })
 
 routerProductos.post('', (req:Request,res:Response)=>{
+    contenedorProductos.save(productos);
     apiProductos.add(req,res);
 })
 
@@ -75,6 +76,7 @@ routerCarrito.post('/:id/productos',(req:Request,res:Response)=>{
 })
 
 routerCarrito.post('', (req:Request,res:Response)=>{
+    contenedorProductos.save(carritos);
     apiCarritos.addCarrito(req,res,productos);
 })
 
@@ -95,26 +97,33 @@ io.on('connection',(socket:Socket)=>{
     console.log("Nuevo cliente conectado");
     socket.emit('carritos',carritos);
     socket.emit('productos',productos);
-    socket.on('nuevo-producto',mensaje=>{
-        io.sockets.emit('productos',productos);
-        if(productos.length==0){
-            productos.push(mensaje);
-            contenedorProductos.save(productos);
-        }
-        else{
-            productos.push(mensaje);
-            contenedorProductos.save(mensaje);  
-        }
-    })
     socket.on('nuevo-producto',producto=>{
         io.sockets.emit('productos',productos);
         if(productos.length==0){
             productos.push(producto);
+            console.log("Guardando archivo de productos en el if");
             contenedorProductos.save(productos);
         }
         else{
             productos.push(producto);
-            contenedorProductos.save(producto);
+            console.log("Guardando archivo de productos en el else");
+            contenedorProductos.save(producto);  
+        }
+    })
+    socket.on('nuevo-carrito',carrito=>{
+        console.log("Socket de carrito on");
+        
+        io.sockets.emit('carritos',carritos);
+        if(carritos.length==0){
+            carritos.push(carrito);
+            console.log("Guardando archivo de carrito en el if");
+            
+            contenedorCarritos.save(carritos);
+        }
+        else{
+            carritos.push(carrito);
+            console.log("Guardando archivo de carrito en el else");
+            contenedorCarritos.save(carrito);
         }
     })
 })

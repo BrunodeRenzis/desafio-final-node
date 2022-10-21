@@ -1,4 +1,3 @@
-
 class Api{
     constructor(array){
         this.array = array
