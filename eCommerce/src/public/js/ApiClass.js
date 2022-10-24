@@ -6,7 +6,7 @@ class Api{
         return this.array.find(elem => elem.id==id);
     }
     
-    add = (req,res)=>{
+    addProduct = (req,res)=>{
         const elem = req.body;
         elem.id = (this.array.length+1);
         elem.timestamp = Date.now();
@@ -30,6 +30,8 @@ class Api{
         for(let i=0;i<this.array.length;i++){
             if(id == this.array[i].id){
                 res.send(this.array[i].productos);
+            } else{
+                res.json({error:"No se obtuvieron productos"})
             }
         }
     }
@@ -44,6 +46,8 @@ class Api{
                 producto.timestamp = Date.now();
                 this.array[i].productos.push(producto);
                 res.json(this.array[i].productos);
+            } else{
+                res.json({error:"Producto no encontrado"})
             }
         }
     }
@@ -79,6 +83,8 @@ class Api{
                     if(this.array[i].productos[j].id==id_prod){
                         const elemento = this.array[i].productos.splice((this.array[i].productos[j].id)-1,1);
                         res.send({elementoBorrado:elemento});
+                    } else{
+                        res.send({error:"Producto no encontrado en el carrito"})
                     }
                 }
             }

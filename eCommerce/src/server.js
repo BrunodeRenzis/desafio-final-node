@@ -1,5 +1,6 @@
 "use strict";
 exports.__esModule = true;
+var middlewares_1 = require("./middlewares");
 var express = require('express');
 var ApiClass = require('./public/js/ApiClass.js');
 var Contenedor = require('./public/js/Contenedor.js');
@@ -34,40 +35,38 @@ routerCarrito.get('', function (req, res) {
 routerProductos.get('/:id', function (req, res) {
     apiProductos.get(req, res);
 });
-routerProductos.post('', function (req, res) {
+routerProductos.post('', middlewares_1.authMiddleware, function (req, res) {
     contenedorProductos.save(productos);
-    apiProductos.add(req, res);
+    apiProductos.addProduct(req, res);
 });
-routerProductos.put('/:id', function (req, res) {
+routerProductos.put('/:id', middlewares_1.authMiddleware, function (req, res) {
     apiProductos.modify(req, res);
 });
-routerProductos["delete"]('/:id', function (req, res) {
+routerProductos["delete"]('/:id', middlewares_1.authMiddleware, function (req, res) {
     apiProductos["delete"](req, res);
 });
-///////////////////////CARRITO////////////////////////
-routerCarrito.get('/:id', function (req, res) {
+routerCarrito.get('/:id', middlewares_1.authMiddleware, function (req, res) {
     apiCarritos.get(req, res);
 });
-routerCarrito.get('/:id/productos', function (req, res) {
+routerCarrito.get('/:id/productos', middlewares_1.authMiddleware, function (req, res) {
     apiCarritos.getProductsOfCarrito(req, res);
 });
-routerCarrito.post('/:id/productos', function (req, res) {
+routerCarrito.post('/:id/productos', middlewares_1.authMiddleware, function (req, res) {
     apiCarritos.postProductsInCarrito(req, res);
 });
-routerCarrito.post('', function (req, res) {
+routerCarrito.post('', middlewares_1.authMiddleware, function (req, res) {
     contenedorProductos.save(carritos);
     apiCarritos.addCarrito(req, res, productos);
 });
-routerCarrito.put('/:id', function (req, res) {
+routerCarrito.put('/:id', middlewares_1.authMiddleware, function (req, res) {
     apiCarritos.modify(req, res);
 });
-routerCarrito["delete"]('/:id', function (req, res) {
+routerCarrito["delete"]('/:id', middlewares_1.authMiddleware, function (req, res) {
     apiCarritos["delete"](req, res);
 });
-routerCarrito["delete"]('/:id/productos/:id_prod', function (req, res) {
+routerCarrito["delete"]('/:id/productos/:id_prod', middlewares_1.authMiddleware, function (req, res) {
     apiCarritos.deleteProductInCarrito(req, res);
 });
-////////////////////////////////////////////////////////////////////////////////////////////////////
 io.on('connection', function (socket) {
     console.log("Nuevo cliente conectado");
     socket.emit('carritos', carritos);
@@ -100,12 +99,5 @@ io.on('connection', function (socket) {
         }
     });
 });
-///////////////////////////////////////////////////////////////////////////////////////////////////
 var PORT = process.env.port || 8080;
-//const server = app.listen(PORT,()=>{console.log('server runing')});
-//server.on('error',(error:Error)=>console.log(`Error ${error}`));
 httpServer.listen(PORT, function () { return console.log("SERVER ON"); }).on('error', function (error) { return console.log("Error en el servidor ".concat(error)); });
-///////////////////////////////////TODO LIST///////////////////////////////////
-/*
-    1)TRABAJAR CON WEBSOCKET PARA MOSTRAR LOS PRODUCTOS QUE VAS AGREGANDO A LA LISTA
-*/ 

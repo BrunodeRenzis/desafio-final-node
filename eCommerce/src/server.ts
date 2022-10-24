@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Socket } from 'socket.io';
 import { Carrito } from './clases/carrito';
 import { Producto } from './clases/producto';
+import {authMiddleware} from './middlewares'
 const express = require('express');
 const ApiClass = require ('./public/js/ApiClass.js');
 const Contenedor = require ('./public/js/Contenedor.js');
@@ -48,51 +49,49 @@ routerProductos.get('/:id', (req:Request,res:Response)=>{
     apiProductos.get(req,res);
 })
 
-routerProductos.post('', (req:Request,res:Response)=>{
+routerProductos.post('',authMiddleware, (req:Request,res:Response)=>{
     contenedorProductos.save(productos);
-    apiProductos.add(req,res);
+    apiProductos.addProduct(req,res);
 })
 
-routerProductos.put('/:id',(req:Request,res:Response)=>{
+routerProductos.put('/:id',authMiddleware,(req:Request,res:Response)=>{
     apiProductos.modify(req,res);
 })
 
-routerProductos.delete('/:id',(req:Request,res:Response)=>{
+routerProductos.delete('/:id',authMiddleware,(req:Request,res:Response)=>{
     apiProductos.delete(req,res);
 })
 
-///////////////////////CARRITO////////////////////////
 
-routerCarrito.get('/:id', (req:Request,res:Response)=>{
+routerCarrito.get('/:id',authMiddleware, (req:Request,res:Response)=>{
     apiCarritos.get(req,res);
 })
 
-routerCarrito.get('/:id/productos',(req:Request,res:Response)=>{
+routerCarrito.get('/:id/productos',authMiddleware,(req:Request,res:Response)=>{
     apiCarritos.getProductsOfCarrito(req,res);
 })
 
-routerCarrito.post('/:id/productos',(req:Request,res:Response)=>{
+routerCarrito.post('/:id/productos',authMiddleware,(req:Request,res:Response)=>{
     apiCarritos.postProductsInCarrito(req,res);
 })
 
-routerCarrito.post('', (req:Request,res:Response)=>{
+routerCarrito.post('',authMiddleware, (req:Request,res:Response)=>{
     contenedorProductos.save(carritos);
     apiCarritos.addCarrito(req,res,productos);
 })
 
-routerCarrito.put('/:id',(req:Request,res:Response)=>{
+routerCarrito.put('/:id',authMiddleware,(req:Request,res:Response)=>{
     apiCarritos.modify(req,res);
 })
 
-routerCarrito.delete('/:id',(req:Request,res:Response)=>{
+routerCarrito.delete('/:id',authMiddleware,(req:Request,res:Response)=>{
     apiCarritos.delete(req,res);
 })
 
-routerCarrito.delete('/:id/productos/:id_prod',(req:Request,res:Response)=>{
+routerCarrito.delete('/:id/productos/:id_prod',authMiddleware,(req:Request,res:Response)=>{
     apiCarritos.deleteProductInCarrito(req,res);
 })
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
 io.on('connection',(socket:Socket)=>{
     console.log("Nuevo cliente conectado");
     socket.emit('carritos',carritos);
@@ -127,14 +126,7 @@ io.on('connection',(socket:Socket)=>{
         }
     })
 })
-///////////////////////////////////////////////////////////////////////////////////////////////////
 
 const PORT = process.env.port || 8080;
-//const server = app.listen(PORT,()=>{console.log('server runing')});
-//server.on('error',(error:Error)=>console.log(`Error ${error}`));
 httpServer.listen(PORT,()=>console.log("SERVER ON")).on('error',(error:Error)=>console.log(`Error en el servidor ${error}`));
 
-///////////////////////////////////TODO LIST///////////////////////////////////
-/*
-    1)TRABAJAR CON WEBSOCKET PARA MOSTRAR LOS PRODUCTOS QUE VAS AGREGANDO A LA LISTA
-*/
